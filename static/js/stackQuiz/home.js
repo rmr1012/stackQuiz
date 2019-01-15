@@ -50,7 +50,7 @@ function appendNewCard(length,endpoint="load"){
     console.log("trying to append new card")
           $.ajax({
                   type: "POST",
-                  url: endpoint,//other option is search
+                  url: window.location.pathname+endpoint,//other option is search
                   dataType: "json",
                   data : {ids : idsList,query:activeTopic,length:length},
                   success: function(response) {
