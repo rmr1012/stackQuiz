@@ -10,8 +10,7 @@ from stackQuiz.models import *
 from random import *
 from stackapi import StackAPI
 
-key="YRbWKYI*hhIRDZXXE9ijEw(("
-
+SEAPIkey=None
 avalSites={"Stack Overflow":"stackoverflow",
 "ServerFault":"serverfault",
 "Electrical Engineering":"electronics",
@@ -21,7 +20,7 @@ avalSites={"Stack Overflow":"stackoverflow",
 
 SITES={}
 for siteName,siteHandle in avalSites.items():
-    SITES[siteName]=StackAPI(siteHandle,key=key)
+    SITES[siteName]=StackAPI(siteHandle,key=SEAPIkey)
     SITES[siteName].max_pages=1
     SITES[siteName].page_size=100
 
