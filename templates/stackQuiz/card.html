@@ -19,7 +19,7 @@
 
   <div class="polarized_card card answer_card" >
     {% if answers %}
-      <a class="waves-effect waves-light btn" id="b-{{question.id}}">Toggle Answers</a>
+      <a class="waves-effect waves-light btn" style="z-index: auto;" id="b-{{question.id}}">Toggle Answers</a>
       <script> $("#b-{{question.id}}").click(function(){$("#a-{{question.id}}").toggle()})</script>
         <div class="answer-container" id="a-{{question.id}}" style="display:none">
         <ul id="tabs-swipe-demo" class="tabs">

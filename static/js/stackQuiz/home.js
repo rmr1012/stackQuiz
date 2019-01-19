@@ -26,7 +26,9 @@ document.getElementById('search').onkeypress = function(e){
       // console.log($("#search").val())
         activeTopic=$("#search").val();
         console.log("searched for "+activeTopic)
+        $(".pre-spin-loader").show()
         $(".card-rack").html(" "); // clear html
+        idsList=[]; // clear id list
         appendNewCard(10,endpoint="search");
         loading=false;
       return false;
@@ -43,19 +45,21 @@ $(".spin-loader").css("opacity",0)
 
 $(document).ready(function(){
     $('.tabs').tabs(); // { swipeable: true }
-
+    $('select').formSelect();
   });
 
 function appendNewCard(length,endpoint="load"){
     console.log("trying to append new card")
+    var site = $("#site-select input").val()
           $.ajax({
                   type: "POST",
                   url: window.location.pathname+endpoint,//other option is search
                   dataType: "json",
-                  data : {ids : idsList,query:activeTopic,length:length},
+                  data : {ids : idsList,site:site,query:activeTopic,length:length},
                   success: function(response) {
                       console.log(response);
                       $(".card-rack").append(response.card);
+                      $(".pre-spin-loader").hide()
                       idsList=idsList.concat(response.ids);
                       // console.log("adding qid "+response.context.question.id);
                       // idsList.push(response.context.question.id);
@@ -95,11 +99,11 @@ function animate_scroll(){
       $('nav').addClass('s12').removeClass('s8');
     }, 500);
   }
-  else if ($(window).scrollTop()-($('.card-rack').offset().top+$('.card-rack').height())+$(window).height()+loadSense > 0 & !loading){
-    loading=true;
-    $(".spin-loader").css("opacity",1)
-    console.log("starting to load");
-    appendNewCard(1);
-  }
+  // else if ($(window).scrollTop()-($('.card-rack').offset().top+$('.card-rack').height())+$(window).height()+loadSense > 0 & !loading){
+  //   loading=true;
+  //   $(".spin-loader").css("opacity",1)
+  //   console.log("starting to load");
+  //   appendNewCard(1);
+  // }
 
 }

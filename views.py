@@ -12,9 +12,21 @@ from stackapi import StackAPI
 
 key="YRbWKYI*hhIRDZXXE9ijEw(("
 
-SITE = StackAPI('electronics',key=key)
-SITE.max_pages=1
-SITE.page_size=100
+avalSites={"Stack Overflow":"stackoverflow",
+"ServerFault":"serverfault",
+"Electrical Engineering":"electronics",
+"Super User":"superuser",
+"Mathematics":"math",
+"Ask Ubuntu":"askubuntu"}
+
+SITES={}
+for siteName,siteHandle in avalSites.items():
+    SITES[siteName]=StackAPI(siteHandle,key=key)
+    SITES[siteName].max_pages=1
+    SITES[siteName].page_size=100
+
+#SITE = StackAPI('electronics',key=key)
+
 
 
 fakeQuestion={"question":{"id":"12345","title":"who gives a fuck?","content":"lolol man this content is trash hahaha"},"answers":[{"id":"55555","votes":15,"content":"happy answer 15"},{"id":"22222","votes":5,"content":"sad answer 5"}]}
@@ -22,19 +34,21 @@ class HomeView(TemplateView): #some from 48
     template_name = 'stackQuiz/stackQuiz.html'
     def get(self, request):
 
-        context = fakeQuestion # delete dummy when there's real stuff
-        return render(request, self.template_name,context)
+        context = {"sitesStr":str(list(avalSites)),"sites":list(avalSites)} # delete dummy when there's real stuff
+        return render(request, self.template_name, context)
 
 
-@api_view(['GET','POST'])
+# @api_view(['GET','POST'])
 @csrf_exempt
 def LoadAPI(request):
 
     if request.method == 'POST':
-        idx=request.POST.get('idx[]')
+        ids=request.POST.getlist('ids[]')
         length=int(request.POST.get('length'))
+        site=request.POST.get('site')
         query=request.POST.get('query')
-        print(idx)
+        print(ids)
+        #print(request.__dict__)
 
         context=fakeQuestion
         newCard=''
@@ -44,18 +58,18 @@ def LoadAPI(request):
         return JsonResponse({"card":newCard,"context":context})
 
 
-@api_view(['GET','POST'])
+# @api_view(['GET','POST'])
 @csrf_exempt
 def SearchAPI(request):
 
     if request.method == 'POST':
-        idx=request.POST.get('idx[]')
         query=request.POST.get('query')
+        site=request.POST.get('site')
         length=int(request.POST.get('length'))
+        searchResult=SITES[site].fetch("search",intitle=query,sort="relevance",order="desc",filter="!)EhwLl5mQ7SRRT.ghEE_.7mDw6z-FVdx9vSNH8IM4fdEpC-K*")
+        APIresult=searchResult["items"]
 
-        print(idx)
-
-        questions=buildContext(query,length)
+        questions=buildContext(APIresult)
         qIDs=[]
         for question in questions:
             print(question["question"]["id"])
@@ -63,18 +77,22 @@ def SearchAPI(request):
         allCards=''
 
         #print(questions)
-        for question in questions:
+        for idx,question in enumerate(questions):
             newCard = render_to_string('stackQuiz/card.html',question)
+            # QuestionCache(question_id=question["question"]["id"],site=site,query=query,content=newCard).save()
+
+            # if idx<length:
+            #     allCards+=newCard
             allCards+=newCard
+        allCards+='<h2 style="text-align:center">That\'s all the questions</h2>'
 
         return JsonResponse({"card":allCards,'ids':qIDs})
 maxAns=4 # max ans per ques
-def buildContext(query,length):
-    searchResult=SITE.fetch("search",intitle=query,sort="relevance",order="desc",filter="!)EhwLl5mQ7SRRT.ghEE_.7mDw6z-FVdx9vSNH8IM4fdEpC-K*")
+def buildContext(APIresult):
 
     qList=[]
 
-    for idx,question in enumerate(searchResult["items"]):
+    for question in APIresult:
         questionDict={}
         if question['is_answered'] and question['question_id']:
             print(question["title"])
@@ -94,8 +112,5 @@ def buildContext(query,length):
                     answerDict["body"]=answer["body"]
                     answerDict["id"]=answer["answer_id"]
                     answerVotesList.append(answerDict)
-
             qList.append({"question":questionDict,"answers":answerVotesList})
-        if idx>length:
-            break
     return qList
