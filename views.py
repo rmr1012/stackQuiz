@@ -8,7 +8,7 @@ from django.http import HttpResponseForbidden , HttpResponse
 from django.urls import reverse
 from stackQuiz.models import *
 from random import *
-from stackapi import StackAPI
+
 
 SEAPIkey=None
 avalSites={"Stack Overflow":"stackoverflow",
@@ -19,10 +19,16 @@ avalSites={"Stack Overflow":"stackoverflow",
 "Ask Ubuntu":"askubuntu"}
 
 SITES={}
-for siteName,siteHandle in avalSites.items():
-    SITES[siteName]=StackAPI(siteHandle,key=SEAPIkey)
-    SITES[siteName].max_pages=1
-    SITES[siteName].page_size=100
+
+try:
+    from stackapi import StackAPI
+    for siteName,siteHandle in avalSites.items():
+        SITES[siteName]=StackAPI(siteHandle,key=SEAPIkey)
+        SITES[siteName].max_pages=1
+        SITES[siteName].page_size=100
+except:
+    print("failed to import stackAPI")
+
 
 #SITE = StackAPI('electronics',key=key)
 
